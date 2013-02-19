@@ -9,7 +9,10 @@ repositories {
 }
 
 dependencies {
-    compile 'net.java.dev.jna:jna:3.4.0'
+    compile 'net.java.dev.jna:jna:3.4.0' // LGPL
+    compile 'org.slf4j:slf4j-api:1.6.1' // MIT
+    compile 'ch.qos.logback:logback-core:0.9.29' // EPL
+    compile 'ch.qos.logback:logback-classic:0.9.29' // EPL
     testCompile 'junit:junit:4.8.2'
 }
 
