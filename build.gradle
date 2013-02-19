@@ -1,0 +1,14 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+repositories {
+    maven {
+      name "cobra"
+      url "http://cobra.cs.uni-duesseldorf.de/artifactory/repo"
+    } 
+}
+
+dependencies {
+    compile 'jna:jna:3.5.2'
+}
+
