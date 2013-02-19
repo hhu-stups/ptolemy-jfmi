@@ -1,5 +1,18 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+    }
+}
+
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'fatjar'
+
 
 repositories {
     maven {
@@ -10,9 +23,7 @@ repositories {
 
 dependencies {
     compile 'net.java.dev.jna:jna:3.4.0' // LGPL
-    compile 'org.slf4j:slf4j-api:1.6.1' // MIT
-    compile 'ch.qos.logback:logback-core:0.9.29' // EPL
-    compile 'ch.qos.logback:logback-classic:0.9.29' // EPL
     testCompile 'junit:junit:4.8.2'
 }
+
 
