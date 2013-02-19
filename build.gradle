@@ -9,6 +9,7 @@ repositories {
 }
 
 dependencies {
-    compile 'jna:jna:3.5.2'
+    compile 'net.java.dev.jna:jna:3.4.0'
+    testCompile 'junit:junit:4.8.2'
 }
 

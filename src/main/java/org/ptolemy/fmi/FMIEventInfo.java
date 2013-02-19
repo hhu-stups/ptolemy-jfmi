@@ -28,6 +28,8 @@
 
 package org.ptolemy.fmi;
 
+import java.util.List;
+
 import com.sun.jna.Structure;
 
 /**
@@ -125,4 +127,10 @@ public class FMIEventInfo extends Structure {
                 "stateValueReferencesChanged", "stateValuesChanged",
                 "terminateSimulation", "upcomingTimeEvent", "nextEventTime" });
     }
+
+	@Override
+	protected List getFieldOrder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
