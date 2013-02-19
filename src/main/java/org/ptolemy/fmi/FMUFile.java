@@ -53,14 +53,18 @@ import com.sun.jna.NativeLibrary;
 //// FMUFile
 
 /**
- * Parse a Functional Mock-up Interface (FMI) 1.0 Functional Mock-up
- * Unit (FMU) file and create a FMIModelDescription for later use.
+ * Parse a Functional Mock-up Interface (FMI) 1.0 Functional Mock-up Unit (FMU)
+ * file and create a FMIModelDescription for later use.
  * 
- * <p>The parseFMUFile() method in this class is the primary entry
- * point into this package.</p>
- *
- * <p>FMI documentation may be found at
- * <a href="http://www.modelisar.com/fmi.html">http://www.modelisar.com/fmi.html</a>.
+ * <p>
+ * The parseFMUFile() method in this class is the primary entry point into this
+ * package.
+ * </p>
+ * 
+ * <p>
+ * FMI documentation may be found at <a
+ * href="http://www.modelisar.com/fmi.html">
+ * http://www.modelisar.com/fmi.html</a>.
  * </p>
  * 
  * @author Christopher Brooks
@@ -69,291 +73,308 @@ import com.sun.jna.NativeLibrary;
  * @Pt.AcceptedRating Red (cxh)
  */
 public class FMUFile {
-    /** Return the name of the shared library from a .fmu file.
-     *  @param fmiModelDescription The representation of the model that was read
-     *  in by {#parseFMUFile}.
-     *  @return The canonical path of the shared library.
-     *  @exception IOException If thrown while determining the canonical path of the library.
-     */
-    public static String fmuSharedLibrary(
-            FMIModelDescription fmiModelDescription) throws IOException {
+	/**
+	 * Return the name of the shared library from a .fmu file.
+	 * 
+	 * @param fmiModelDescription
+	 *            The representation of the model that was read in by
+	 *            {#parseFMUFile}.
+	 * @return The canonical path of the shared library.
+	 * @exception IOException
+	 *                If thrown while determining the canonical path of the
+	 *                library.
+	 */
+	public static String fmuSharedLibrary(
+			FMIModelDescription fmiModelDescription) throws IOException {
 
-        // Find the modelDescription.xml file.
-        File modelDescriptionFile = null;
-        for (File file : fmiModelDescription.files) {
-            if (file.getName().endsWith("modelDescription.xml")) {
-                modelDescriptionFile = file;
-                break;
-            }
-        }
+		// Find the modelDescription.xml file.
+		File modelDescriptionFile = null;
+		for (File file : fmiModelDescription.files) {
+			if (file.getName().endsWith("modelDescription.xml")) {
+				modelDescriptionFile = file;
+				break;
+			}
+		}
 
-        if (modelDescriptionFile == null) {
-            throw new IOException(
-                    "The .fmu file does not contain a modelDescription.xml file.");
-        }
+		if (modelDescriptionFile == null) {
+			throw new IOException(
+					"The .fmu file does not contain a modelDescription.xml file.");
+		}
 
-        // Determine the path to the shared object.
-        String topDirectory = modelDescriptionFile.getParent();
-        String osName = System.getProperty("os.name").toLowerCase(Locale.getDefault());
-        String extension = ".so";
-        if (osName.startsWith("mac")) {
-            // JModelica seems to use darwin as the binary name
-            osName = "darwin";
-            extension = ".dylib";
-        } else if (osName.startsWith("windows")) {
-            osName = "win";
-            extension = ".dll";
-        }
-        String bitWidth = "64";
-        if (FMUFile._is32Bit()) {
-            bitWidth = "32";
-        }
-        String library = topDirectory + File.separator + "binaries"
-                + File.separator + osName + bitWidth + File.separator
-                + fmiModelDescription.modelIdentifier + extension;
-        File canonicalFile = new File(library).getCanonicalFile();
-        if (!canonicalFile.exists()) {
-            if (osName.startsWith("mac") || osName.startsWith("darwin")) {
-                // OpenModelica 1.8.1 uses darwin-x86_64
-                osName = "darwin-x86_";
-                extension = ".so";
-                library = topDirectory + File.separator + "binaries"
-                        + File.separator + osName + bitWidth + File.separator
-                        + fmiModelDescription.modelIdentifier + extension;
-                canonicalFile = new File(library).getCanonicalFile();
-            }
-        }
-        String canonicalPath = canonicalFile.getCanonicalPath();
+		// Determine the path to the shared object.
+		String topDirectory = modelDescriptionFile.getParent();
+		String osName = System.getProperty("os.name").toLowerCase(
+				Locale.getDefault());
+		String extension = ".so";
+		if (osName.startsWith("mac")) {
+			// JModelica seems to use darwin as the binary name
+			osName = "darwin";
+			extension = ".dylib";
+		} else if (osName.startsWith("windows")) {
+			osName = "win";
+			extension = ".dll";
+		}
+		String bitWidth = "64";
+		if (FMUFile._is32Bit()) {
+			bitWidth = "32";
+		}
+		String library = topDirectory + File.separator + "binaries"
+				+ File.separator + osName + bitWidth + File.separator
+				+ fmiModelDescription.modelIdentifier + extension;
+		File canonicalFile = new File(library).getCanonicalFile();
+		if (!canonicalFile.exists()) {
+			if (osName.startsWith("mac") || osName.startsWith("darwin")) {
+				// OpenModelica 1.8.1 uses darwin-x86_64
+				osName = "darwin-x86_";
+				extension = ".so";
+				library = topDirectory + File.separator + "binaries"
+						+ File.separator + osName + bitWidth + File.separator
+						+ fmiModelDescription.modelIdentifier + extension;
+				canonicalFile = new File(library).getCanonicalFile();
+			}
+		}
+		String canonicalPath = canonicalFile.getCanonicalPath();
 
-        return canonicalPath;
-    }
+		return canonicalPath;
+	}
 
-    /** Read in a .fmu file and parse the modelDescription.xml file.
-     *  @param fmuFileName the .fmu file
-     *  @return An object that represents the structure of the
-     *  modelDescriptionFile.xml file.
-     *  @exception IOException If the file cannot be unzipped or the
-     *  modelDescription.xml file contained by the fmuFileName zip
-     *  file cannot be parsed.
-     */
-    public static FMIModelDescription parseFMUFile(String fmuFileName)
-            throws IOException {
+	/**
+	 * Read in a .fmu file and parse the modelDescription.xml file.
+	 * 
+	 * @param fmuFileName
+	 *            the .fmu file
+	 * @return An object that represents the structure of the
+	 *         modelDescriptionFile.xml file.
+	 * @exception IOException
+	 *                If the file cannot be unzipped or the modelDescription.xml
+	 *                file contained by the fmuFileName zip file cannot be
+	 *                parsed.
+	 */
+	public static FMIModelDescription parseFMUFile(String fmuFileName)
+			throws IOException {
 
-        // Unzip the file.
-        List<File> files = null;
-        try {
-            files = _unzip(fmuFileName);
-        } catch (IOException ex) {
-            throw new IOException("Failed to unzip \"" + fmuFileName + "\".",
-                    ex);
-        }
+		// Unzip the file.
+		List<File> files = null;
+		try {
+			files = _unzip(fmuFileName);
+		} catch (IOException ex) {
+			throw new IOException("Failed to unzip \"" + fmuFileName + "\".",
+					ex);
+		}
 
-        // Find the modelDescription.xml file.
-        File modelDescriptionFile = null;
-        for (File file : files) {
-            if (file.getName().endsWith("modelDescription.xml")) {
-                modelDescriptionFile = file;
-                break;
-            }
-        }
-        if (modelDescriptionFile == null) {
-            throw new IOException("File \"modelDescription.xml\" is missing "
-                    + "from the fmu archive \"" + fmuFileName + "\"/");
-        }
+		// Find the modelDescription.xml file.
+		File modelDescriptionFile = null;
+		for (File file : files) {
+			if (file.getName().endsWith("modelDescription.xml")) {
+				modelDescriptionFile = file;
+				break;
+			}
+		}
+		if (modelDescriptionFile == null) {
+			throw new IOException("File \"modelDescription.xml\" is missing "
+					+ "from the fmu archive \"" + fmuFileName + "\"/");
+		}
 
-        // Read the modelDescription.xml file.
-        Document document = null;
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		// Read the modelDescription.xml file.
+		Document document = null;
+		try {
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
-            // Using factory get an instance of document builder.
-            DocumentBuilder db = dbf.newDocumentBuilder();
+			// Using factory get an instance of document builder.
+			DocumentBuilder db = dbf.newDocumentBuilder();
 
-            // Parse using builder to get DOM representation of the XML file.
-            document = db.parse(modelDescriptionFile.getCanonicalPath());
-        } catch (Throwable throwable) {
-            throw new IOException("Failed to parse \"" + modelDescriptionFile
-                    + "\".", throwable);
-        }
+			// Parse using builder to get DOM representation of the XML file.
+			document = db.parse(modelDescriptionFile.getCanonicalPath());
+		} catch (Throwable throwable) {
+			throw new IOException("Failed to parse \"" + modelDescriptionFile
+					+ "\".", throwable);
+		}
 
-        Element root = document.getDocumentElement();
+		Element root = document.getDocumentElement();
 
-        // Create an object that represents the modelDescription.xml file
-        FMIModelDescription fmiModelDescription = new FMIModelDescription();
+		// Create an object that represents the modelDescription.xml file
+		FMIModelDescription fmiModelDescription = new FMIModelDescription();
 
-        // Save the list of files that were extracted for later use.
-        fmiModelDescription.files = files;
+		// Save the list of files that were extracted for later use.
+		fmiModelDescription.files = files;
 
-        // Handle the root attributes
-        if (root.hasAttribute("fmiVersion")) {
-            fmiModelDescription.fmiVersion = root.getAttribute("fmiVersion");
-        }
-        if (root.hasAttribute("modelIdentifier")) {
-            fmiModelDescription.modelIdentifier = root
-                    .getAttribute("modelIdentifier");
-        }
-        if (root.hasAttribute("modelName")) {
-            fmiModelDescription.modelName = root.getAttribute("modelName");
-        }
-        if (root.hasAttribute("guid")) {
-            fmiModelDescription.guid = root.getAttribute("guid");
-        }
-        if (root.hasAttribute("numberOfContinuousStates")) {
-            fmiModelDescription.numberOfContinuousStates = Integer.valueOf(
-                    root.getAttribute("numberOfContinuousStates")).intValue();
-        }
-        if (root.hasAttribute("numberOfEventIndicators")) {
-            fmiModelDescription.numberOfEventIndicators = Integer.valueOf(
-                    root.getAttribute("numberOfEventIndicators")).intValue();
-        }
+		// Handle the root attributes
+		if (root.hasAttribute("fmiVersion")) {
+			fmiModelDescription.fmiVersion = root.getAttribute("fmiVersion");
+		}
+		if (root.hasAttribute("modelIdentifier")) {
+			fmiModelDescription.modelIdentifier = root
+					.getAttribute("modelIdentifier");
+		}
+		if (root.hasAttribute("modelName")) {
+			fmiModelDescription.modelName = root.getAttribute("modelName");
+		}
+		if (root.hasAttribute("guid")) {
+			fmiModelDescription.guid = root.getAttribute("guid");
+		}
+		if (root.hasAttribute("numberOfContinuousStates")) {
+			fmiModelDescription.numberOfContinuousStates = Integer.valueOf(
+					root.getAttribute("numberOfContinuousStates")).intValue();
+		}
+		if (root.hasAttribute("numberOfEventIndicators")) {
+			fmiModelDescription.numberOfEventIndicators = Integer.valueOf(
+					root.getAttribute("numberOfEventIndicators")).intValue();
+		}
 
-        // TypeDefinitions
-        // NodeList is not a list, it only has getLength() and item(). #fail.
-        NodeList types = document.getElementsByTagName("Type");
-        int length = types.getLength();
-        for (int i = 0; i < length; i++) {
-            Element element = (Element) types.item(i);
-            String elementTypeName = element.getAttribute("name");
-            NodeList children = element.getChildNodes(); // NodeList. Worst.
-                                                         // Ever.
-            for (int j = 0; j < children.getLength(); j++) {
-                Node child = element.getChildNodes().item(j);
-                if (child instanceof Element) {
-                    Element childElement = (Element) child;
-                    String childTypeName = childElement.getNodeName();
-                    fmiModelDescription.typeDefinitions.put(elementTypeName,
-                            childTypeName);
-                }
-            }
-        }
+		// TypeDefinitions
+		// NodeList is not a list, it only has getLength() and item(). #fail.
+		NodeList types = document.getElementsByTagName("Type");
+		int length = types.getLength();
+		for (int i = 0; i < length; i++) {
+			Element element = (Element) types.item(i);
+			String elementTypeName = element.getAttribute("name");
+			NodeList children = element.getChildNodes(); // NodeList. Worst.
+															// Ever.
+			for (int j = 0; j < children.getLength(); j++) {
+				Node child = element.getChildNodes().item(j);
+				if (child instanceof Element) {
+					Element childElement = (Element) child;
+					String childTypeName = childElement.getNodeName();
+					fmiModelDescription.typeDefinitions.put(elementTypeName,
+							childTypeName);
+				}
+			}
+		}
 
-        // FIXME: handle DefaultExperiment
+		// FIXME: handle DefaultExperiment
 
-        // FIXME: handle Vendor annotations
+		// FIXME: handle Vendor annotations
 
-        String sharedLibrary = FMUFile.fmuSharedLibrary(fmiModelDescription);
-        // Load the shared library
-        try {
-            fmiModelDescription.nativeLibrary = NativeLibrary
-                    .getInstance(sharedLibrary);
-        } catch (Throwable throwable) {
-            List<String> binariesFiles = new LinkedList<String>();
-            for (File file : fmiModelDescription.files) {
-                if (file.toString().indexOf("binaries") != -1) {
-                    binariesFiles.add(file.toString() + "\n");
-                }
-            }
-            String message = "Failed to load the \"" + sharedLibrary
-                    + "\" shared library, which was created "
-                    + "by unzipping \"" + fmuFileName
-                    + "\". Usually, this is because the .fmu file does "
-                    + "not contain a shared library for the current "
-                    + "architecture.  The fmu file contained the "
-                    + "following files with 'binaries' in the path:\n"
-                    + binariesFiles;
-            System.out.println(message + "\n Original error:\n " + throwable);
-            // Note that Variable.propagate() will handle this error and
-            // hide it.
-            throw new IOException(message, throwable);
-        }
+		String sharedLibrary = FMUFile.fmuSharedLibrary(fmiModelDescription);
+		// Load the shared library
+		try {
+			fmiModelDescription.nativeLibrary = NativeLibrary
+					.getInstance(sharedLibrary);
+		} catch (Throwable throwable) {
+			List<String> binariesFiles = new LinkedList<String>();
+			for (File file : fmiModelDescription.files) {
+				if (file.toString().indexOf("binaries") != -1) {
+					binariesFiles.add(file.toString() + "\n");
+				}
+			}
+			String message = "Failed to load the \"" + sharedLibrary
+					+ "\" shared library, which was created "
+					+ "by unzipping \"" + fmuFileName
+					+ "\". Usually, this is because the .fmu file does "
+					+ "not contain a shared library for the current "
+					+ "architecture.  The fmu file contained the "
+					+ "following files with 'binaries' in the path:\n"
+					+ binariesFiles;
+			System.out.println(message + "\n Original error:\n " + throwable);
+			// Note that Variable.propagate() will handle this error and
+			// hide it.
+			throw new IOException(message, throwable);
+		}
 
-        // ModelVariables
-        // NodeList is not a list, it only has getLength() and item(). #fail.
-        NodeList scalarVariables = document
-                .getElementsByTagName("ScalarVariable");
+		// ModelVariables
+		// NodeList is not a list, it only has getLength() and item(). #fail.
+		NodeList scalarVariables = document
+				.getElementsByTagName("ScalarVariable");
 
-        for (int i = 0; i < scalarVariables.getLength(); i++) {
-            Element element = (Element) scalarVariables.item(i);
-            fmiModelDescription.modelVariables.add(new FMIScalarVariable(
-                    fmiModelDescription, element));
-        }
+		for (int i = 0; i < scalarVariables.getLength(); i++) {
+			Element element = (Element) scalarVariables.item(i);
+			fmiModelDescription.modelVariables.add(new FMIScalarVariable(
+					fmiModelDescription, element));
+		}
 
-        return fmiModelDescription;
-    }
+		return fmiModelDescription;
+	}
 
-    /** Return true if this is a 32bit JVM.
-     *  @return true if this is a 32bit JVM.
-     */
-    private static boolean _is32Bit() {
-        String dataModelProperty = System.getProperty("sun.arch.data.model");
-        // FIXME: it is difficult to detect if we are under a
-        // 64bit JVM. See
-        // http://forums.sun.com/thread.jspa?threadID=5306174
-        if (dataModelProperty.indexOf("64") != -1) {
-            return false;
-        } else {
-            String javaVmNameProperty = System.getProperty("java.vm.name");
-            if (javaVmNameProperty.indexOf("64") != -1) {
-                return false;
-            }
-        }
-        return true;
-    }
+	/**
+	 * Return true if this is a 32bit JVM.
+	 * 
+	 * @return true if this is a 32bit JVM.
+	 */
+	private static boolean _is32Bit() {
+		String dataModelProperty = System.getProperty("sun.arch.data.model");
+		// FIXME: it is difficult to detect if we are under a
+		// 64bit JVM. See
+		// http://forums.sun.com/thread.jspa?threadID=5306174
+		if (dataModelProperty.indexOf("64") != -1) {
+			return false;
+		} else {
+			String javaVmNameProperty = System.getProperty("java.vm.name");
+			if (javaVmNameProperty.indexOf("64") != -1) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    /** Unzip a file into a temporary directory.
-     *  Based on http://java.sun.com/developer/technicalArticles/Programming/compression/.
-     *  @param zipFileName  The file to be unzipped.
-     *  @return the list of files that were extracted.
-     *  @exception IOException if the file cannot be opened, if there are problems reading
-     *  the zip file or if there are problems creating the files or directories.
-     */
-    private static List<File> _unzip(String zipFileName) throws IOException {
-        // FIXME: Use URLs, not files so that we can work from JarZip files.
-        BufferedOutputStream destination = null;
-        final int BUFFER = 2048;
-        byte data[] = new byte[BUFFER];
+	/**
+	 * Unzip a file into a temporary directory. Based on
+	 * http://java.sun.com/developer/technicalArticles/Programming/compression/.
+	 * 
+	 * @param zipFileName
+	 *            The file to be unzipped.
+	 * @return the list of files that were extracted.
+	 * @exception IOException
+	 *                if the file cannot be opened, if there are problems
+	 *                reading the zip file or if there are problems creating the
+	 *                files or directories.
+	 */
+	private static List<File> _unzip(String zipFileName) throws IOException {
+		// FIXME: Use URLs, not files so that we can work from JarZip files.
+		BufferedOutputStream destination = null;
+		final int BUFFER = 2048;
+		byte data[] = new byte[BUFFER];
 
-        // Unzip in a temporary directory.
-        File topDirectoryFile = File.createTempFile("FMUFile", ".tmp");
-        if (!topDirectoryFile.delete()) {
-            throw new IOException("Could not delete temporary file "
-                    + topDirectoryFile);
-        }
-        if (!topDirectoryFile.mkdir()) {
-            throw new IOException("Could not create directory "
-                    + topDirectoryFile);
-        }
-        topDirectoryFile.deleteOnExit();
-        String topDirectory = topDirectoryFile.getCanonicalPath();
-        System.out.println("Extracting to " + topDirectory);
-        List<File> files = new LinkedList<File>();
-        FileInputStream fileInputStream = null;
-        ZipInputStream zipInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(zipFileName);
-            zipInputStream = new ZipInputStream(
-                new BufferedInputStream(fileInputStream));
-            ZipEntry entry;
-            while ((entry = zipInputStream.getNextEntry()) != null) {
-                // System.out.println("Extracting: " + entry);
-                String entryName = entry.getName();
-                File destinationFile = new File(topDirectory, entryName);
-                File destinationParent = destinationFile.getParentFile();
-                // If the directory does not exist, create it.
-                if (!destinationParent.isDirectory()
-                        && !destinationParent.mkdirs()) {
-                    throw new IOException("Failed to create \""
-                            + destinationParent + "\".");
-                }
-                // If the entry is not a directory, then write the file.
-                if (!entry.isDirectory()) {
-                    // Write the files to the disk.
-                    FileOutputStream fos = new FileOutputStream(destinationFile);
-                    destination = new BufferedOutputStream(fos, BUFFER);
-                    int count;
-                    while ((count = zipInputStream.read(data, 0, BUFFER)) != -1) {
-                        destination.write(data, 0, count);
-                    }
-                    destination.flush();
-                    destination.close();
-                    files.add(destinationFile);
-                }
-            }
-        } finally {
-            if (zipInputStream != null) {
-                zipInputStream.close();
-            }
-        }
-        return files;
-    }
+		// Unzip in a temporary directory.
+		File topDirectoryFile = File.createTempFile("FMUFile", ".tmp");
+		if (!topDirectoryFile.delete()) {
+			throw new IOException("Could not delete temporary file "
+					+ topDirectoryFile);
+		}
+		if (!topDirectoryFile.mkdir()) {
+			throw new IOException("Could not create directory "
+					+ topDirectoryFile);
+		}
+		topDirectoryFile.deleteOnExit();
+		String topDirectory = topDirectoryFile.getCanonicalPath();
+		// System.out.println("Extracting to " + topDirectory);
+		List<File> files = new LinkedList<File>();
+		FileInputStream fileInputStream = null;
+		ZipInputStream zipInputStream = null;
+		try {
+			fileInputStream = new FileInputStream(zipFileName);
+			zipInputStream = new ZipInputStream(new BufferedInputStream(
+					fileInputStream));
+			ZipEntry entry;
+			while ((entry = zipInputStream.getNextEntry()) != null) {
+				// System.out.println("Extracting: " + entry);
+				String entryName = entry.getName();
+				File destinationFile = new File(topDirectory, entryName);
+				File destinationParent = destinationFile.getParentFile();
+				// If the directory does not exist, create it.
+				if (!destinationParent.isDirectory()
+						&& !destinationParent.mkdirs()) {
+					throw new IOException("Failed to create \""
+							+ destinationParent + "\".");
+				}
+				// If the entry is not a directory, then write the file.
+				if (!entry.isDirectory()) {
+					// Write the files to the disk.
+					FileOutputStream fos = new FileOutputStream(destinationFile);
+					destination = new BufferedOutputStream(fos, BUFFER);
+					int count;
+					while ((count = zipInputStream.read(data, 0, BUFFER)) != -1) {
+						destination.write(data, 0, count);
+					}
+					destination.flush();
+					destination.close();
+					files.add(destinationFile);
+				}
+			}
+		} finally {
+			if (zipInputStream != null) {
+				zipInputStream.close();
+			}
+		}
+		return files;
+	}
 }
