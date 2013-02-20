@@ -1,19 +1,6 @@
-apply plugin: 'maven'
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
-    }
-}
-
-
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'fatjar'
+apply plugin: 'maven'
 
 
 project.group = 'edu.berkeley.eecs.ptolemy'
@@ -27,17 +14,18 @@ repositories {
     } 
 }
 
-fatJar.doFirst{ 
+dependencies {
+ compile 'net.java.dev.jna:jna:3.4.0'
+ testCompile 'junit:junit:4.8.2'
+}
+
+
+jar.doFirst{ 
      sourceSets.main.java.srcDirs.each { 
         from it 
      } 
 } 
 
-dependencies {
- compile ( group:'net.java.dev.jna', name:'jna',
-        version:'3.4.0', classifier:'sources' )
 
-    testCompile 'junit:junit:4.8.2'
-}
 
 
