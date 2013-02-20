@@ -1,3 +1,5 @@
+apply plugin: 'maven'
+
 buildscript {
     repositories {
         mavenCentral()
@@ -14,6 +16,10 @@ apply plugin: 'eclipse'
 apply plugin: 'fatjar'
 
 
+project.group = 'edu.berkeley.eecs.ptolemy'
+project.version = '1.0.2-SNAPSHOT'
+
+
 repositories {
     maven {
       name "cobra"
@@ -21,8 +27,16 @@ repositories {
     } 
 }
 
+fatJar.doFirst{ 
+     sourceSets.main.java.srcDirs.each { 
+        from it 
+     } 
+} 
+
 dependencies {
-    compile 'net.java.dev.jna:jna:3.4.0' // LGPL
+ compile ( group:'net.java.dev.jna', name:'jna',
+        version:'3.4.0', classifier:'sources' )
+
     testCompile 'junit:junit:4.8.2'
 }
 
