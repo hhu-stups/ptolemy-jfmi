@@ -1,5 +1,7 @@
 # JFMI
 
+[![Build Status](https://travis-ci.org/hhu-stups/ptolemy-jfmi.svg)](https://travis-ci.org/hhu-stups/ptolemy-jfmi)
+
 This project only packages the great JFMI library from the Ptolemy project available from http://ptolemy.eecs.berkeley.edu/java/jfmi/.
 
 The main purpose of this re-packaging is to make jfmi available via Maven. We also changed the build process to use Gradle instead of Ant.
