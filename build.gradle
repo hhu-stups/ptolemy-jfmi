@@ -3,14 +3,12 @@ apply plugin: 'eclipse'
 apply plugin: 'maven'
 
 
-project.version = '1.0.2-SNAPSHOT'
-project.group = 'edu.berkeley.eecs.ptolemy'
+project.version = '1.1.0'
+project.group = 'de.hhu.stups'
+project.archivesBaseName = 'ptolemy-jfmi'
 
 repositories {
-    maven {
-      name "cobra"
-      url "http://cobra.cs.uni-duesseldorf.de/artifactory/repo"
-    } 
+    mavenCentral()
 }
 
 dependencies {
@@ -18,13 +16,79 @@ dependencies {
  testCompile 'junit:junit:4.8.2'
 }
 
+jar.doFirst{
+     sourceSets.main.java.srcDirs.each {
+        from it
+     }
+}
 
-jar.doFirst{ 
-     sourceSets.main.java.srcDirs.each { 
-        from it 
-     } 
-} 
+if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')) {
+
+println "Configured upload task"
+
+apply plugin: 'signing'
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'JFMI'
+        packaging 'jar'
+        // optionally artifactId can be defined here
+        description 'A Java Wrapper for the Functional Mock-up Interface. This library is part of the Ptolemy project.'
+        url 'https://github.com/hhu-stups/ptolemy-jfmi'
+
+        licenses {
+          license {
+            name 'BSD'
+            url 'https://github.com/hhu-stups/ptolemy-jfmi/src/main/resources/license.txt'
+          }
+        }
+
+        scm {
+          connection 'scm:git:git://github.com/hhu-stups/ptolemy-jfmi.git'
+          developerConnection 'scm:git:git@github.com:hhu-stups/ptolemy-jfmi.git'
+          url 'https://github.com/hhu-stups/ptolemy-jfmi'
+        }
 
 
-
-
+        developers {
+          developer {
+            id 'bendisposto'
+            name 'Jens Bendisposto'
+            email 'jens@bendisposto.de'
+          }
+        }
+      }
+    }
+  }
+}
+}
